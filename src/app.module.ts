@@ -11,17 +11,14 @@ import { Product } from './products/entities/product.entity';
 import { AuthModule } from './auth/auth.module';
 import { LossesModule } from './losses/losses.module';
 import { ReportsModule } from './reports/reports.module';
+import { Loss } from './losses/entities/loss.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: 'postgresql://pi_g4uo_user:Vi7lfbqFoeYfRVsvKbwmlQZlmOyEk40X@dpg-d8bfuvvavr4c73932jgg-a.oregon-postgres.render.com/pi_g4uo',
-      port: 5432,
-      username: 'pi_g4uo_user',
-      password: 'Vi7lfbqFoeYfRVsvKbwmlQZlmOyEk40X', //reemplazar por la contraseña de instalacion de mysql
-      database: 'pi_g4uo',
-      entities:[User,Sale,SaleDetail,Product],
+      entities:[User,Sale,SaleDetail,Product,Loss],
       autoLoadEntities: true,
       synchronize: true,
       ssl:{
