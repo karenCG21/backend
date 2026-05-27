@@ -15,15 +15,18 @@ import { ReportsModule } from './reports/reports.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3307,
-      username: 'root',
-      password: '123456789', //reemplazar por la contraseña de instalacion de mysql
-      database: 'pi_db',
+      type: 'postgres',
+      url: 'postgresql://pi_g4uo_user:Vi7lfbqFoeYfRVsvKbwmlQZlmOyEk40X@dpg-d8bfuvvavr4c73932jgg-a.oregon-postgres.render.com/pi_g4uo',
+      port: 5432,
+      username: 'pi_g4uo_user',
+      password: 'Vi7lfbqFoeYfRVsvKbwmlQZlmOyEk40X', //reemplazar por la contraseña de instalacion de mysql
+      database: 'pi_g4uo',
       entities:[User,Sale,SaleDetail,Product],
       autoLoadEntities: true,
       synchronize: true,
+      ssl:{
+        rejectUnauthorized:false,
+      },
     }),
     UsersModule,
     ProductsModule,
