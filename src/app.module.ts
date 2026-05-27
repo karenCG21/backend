@@ -23,6 +23,7 @@ import { Loss } from './losses/entities/loss.entity';
       synchronize: true,
       ssl:{
         rejectUnauthorized:false,
+        
       },
     }),
     UsersModule,
