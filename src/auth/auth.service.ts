@@ -120,13 +120,13 @@ export class AuthService {
         },
       });
 
-    await transporter.verify();
-
+    const resp = await transporter.verify();
+    console.log(resp)
+    console.log("trasnsporter")
     const resetLink =
       `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     try {
-
       await transporter.sendMail({
         from: `"Arca de Vida" <${"arcadevida431@gmail.com"}>`,
         to: email,
