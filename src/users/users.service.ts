@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,22 +22,28 @@ export class UsersService {
   async create(
     createUserDto: CreateUserDto,
   ) {
+
     const hashedPassword =
       await bcrypt.hash(
         createUserDto.password,
         10,
       );
+
     const user =
       this.userRepository.create({
         ...createUserDto,
         password: hashedPassword,
       });
+
     return this.userRepository.save(user);
   }
 
   findAll() {
+
     return this.userRepository.find({
-      relations: {"sales":true},
+      relations: {
+        sales: true,
+      },
     });
   }
 
@@ -44,10 +51,10 @@ export class UsersService {
 
     const user =
       await this.userRepository.findOne({
-
         where: { id },
-
-        relations: {sales:true},
+        relations: {
+          sales: true,
+        },
       });
 
     if (!user) {
@@ -56,12 +63,23 @@ export class UsersService {
         'Usuario no encontrado',
       );
     }
+
     return user;
   }
 
   findByEmail(email: string) {
+
     return this.userRepository.findOne({
       where: { email },
+    });
+  }
+
+  findByResetToken(token: string) {
+
+    return this.userRepository.findOne({
+      where: {
+        resetToken: token,
+      },
     });
   }
 
@@ -85,6 +103,42 @@ export class UsersService {
     );
 
     return this.findOne(id);
+  }
+
+  async updatePassword(
+    id: number,
+    password: string,
+  ) {
+
+    const hashedPassword =
+      await bcrypt.hash(
+        password,
+        10,
+      );
+
+    await this.userRepository.update(
+      id,
+      {
+        password: hashedPassword,
+      },
+    );
+
+    return this.findOne(id);
+  }
+
+  async saveResetToken(
+    id: number,
+    token: string | null,
+    expires: Date | null,
+  ) {
+
+    await this.userRepository.update(
+      id,
+      {
+        resetToken: token as any,
+        resetTokenExpires: expires as any,
+      },
+    );
   }
 
   async remove(id: number) {
