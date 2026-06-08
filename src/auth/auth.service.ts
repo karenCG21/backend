@@ -127,8 +127,13 @@ export class AuthService {
 
     console.log('Transporter creado');
 
-    await transporter.verify();
-
+try {
+  const verify = await transporter.verify();
+  console.log('VERIFY:', verify);
+} catch (err) {
+  console.error('ERROR VERIFY:', err);
+  throw err;
+}
     console.log('SMTP verificado correctamente');
 
     console.log(
