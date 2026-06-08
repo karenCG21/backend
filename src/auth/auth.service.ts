@@ -20,7 +20,7 @@ export class AuthService {
     private usersService: UsersService,
 
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(
     email: string,
@@ -110,53 +110,81 @@ export class AuthService {
 
     const transporter =
       nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
         },
       });
 
+    await transporter.verify();
+
     const resetLink =
-      `http://localhost:5173/reset-password/${token}`;
+      `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Recuperación de contraseña',
-      html: `
-        <h2>🌿 Arca de Vida</h2>
+    try {
 
-        <p>
-          Hemos recibido una solicitud para recuperar tu contraseña.
-        </p>
+      await transporter.sendMail({
+        from: `"Arca de Vida" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Recuperación de contraseña',
+        html: `
+        <div style="font-family: Arial; padding:20px;">
+          <h2>🌿 Arca de Vida</h2>
 
-        <p>
-          Haz clic en el siguiente enlace:
-        </p>
+          <p>
+            Hemos recibido una solicitud para recuperar tu contraseña.
+          </p>
 
-        <a href="${resetLink}">
-          Restablecer contraseña
-        </a>
+          <p>
+            Haz clic en el siguiente botón:
+          </p>
 
-        <p>
-          Este enlace expirará en 30 minutos.
-        </p>
+          <a
+            href="${resetLink}"
+            style="
+              background:#28a745;
+              color:white;
+              padding:12px 20px;
+              text-decoration:none;
+              border-radius:5px;
+              display:inline-block;
+            "
+          >
+            Restablecer contraseña
+          </a>
 
-        <p>
-          Si no solicitaste este cambio,
-          ignora este mensaje.
-        </p>
+          <p style="margin-top:20px;">
+            Este enlace expirará en 30 minutos.
+          </p>
+
+          <p>
+            Si no solicitaste este cambio,
+            ignora este mensaje.
+          </p>
+        </div>
       `,
-    });
+      });
 
-    return {
-      message:
-        'Correo enviado correctamente',
-    };
-  }
+      return {
+        message:
+          'Correo enviado correctamente',
+      };
 
-  async resetPassword(
+    } catch (error) {
+
+      console.error(
+        'ERROR AL ENVIAR CORREO:',
+        error,
+      );
+
+      throw new UnauthorizedException(
+        'No se pudo enviar el correo',
+      );
+    }
+  } async resetPassword(
     token: string,
     password: string,
   ) {
@@ -176,7 +204,7 @@ export class AuthService {
     if (
       !user.resetTokenExpires ||
       new Date() >
-        user.resetTokenExpires
+      user.resetTokenExpires
     ) {
 
       throw new UnauthorizedException(
