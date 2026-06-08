@@ -80,6 +80,7 @@ export class AuthService {
   async forgotPassword(
     email: string,
   ) {
+    console.log("entro a forgot")
 
     const user =
       await this.usersService.findByEmail(
