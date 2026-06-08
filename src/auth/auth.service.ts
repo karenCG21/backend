@@ -78,30 +78,33 @@ export class AuthService {
   }
 
   async forgotPassword(
-    email: string,
-  ) {
-    console.log("entro a forgot")
+  email: string,
+) {
+  try {
+
+    console.log('===== FORGOT PASSWORD =====');
+    console.log('Email recibido:', email);
 
     const user =
       await this.usersService.findByEmail(
         email,
       );
 
-    if (!user) {
+    console.log('Usuario encontrado:', user);
 
+    if (!user) {
       throw new UnauthorizedException(
         'Usuario no encontrado',
       );
     }
 
-    const token =
-      randomUUID();
+    const token = randomUUID();
 
-    const expires =
-      new Date(
-        Date.now() +
-        1000 * 60 * 30,
-      );
+    const expires = new Date(
+      Date.now() + 1000 * 60 * 30,
+    );
+
+    console.log('Token generado:', token);
 
     await this.usersService.saveResetToken(
       user.id,
@@ -109,29 +112,43 @@ export class AuthService {
       expires,
     );
 
+    console.log('Token guardado correctamente');
+
     const transporter =
       nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
         secure: false,
         auth: {
-          user: "arcadevida431@gmail.com",
-          pass: "rlep fcyv sqlf ngsq",
+          user: 'arcadevida431@gmail.com',
+          pass: 'rlep fcyv sqlf ngsq',
         },
       });
 
-    const resp = await transporter.verify();
-    console.log(resp)
-    console.log("trasnsporter")
+    console.log('Transporter creado');
+
+    await transporter.verify();
+
+    console.log('SMTP verificado correctamente');
+
+    console.log(
+      'FRONTEND_URL:',
+      process.env.FRONTEND_URL,
+    );
+
     const resetLink =
       `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
-    try {
-      await transporter.sendMail({
-        from: `"Arca de Vida" <${"arcadevida431@gmail.com"}>`,
-        to: email,
-        subject: 'Recuperación de contraseña',
-        html: `
+    console.log(
+      'Reset Link:',
+      resetLink,
+    );
+
+    await transporter.sendMail({
+      from: '"Arca de Vida" <arcadevida431@gmail.com>',
+      to: email,
+      subject: 'Recuperación de contraseña',
+      html: `
         <div style="font-family: Arial; padding:20px;">
           <h2>🌿 Arca de Vida</h2>
 
@@ -167,25 +184,33 @@ export class AuthService {
           </p>
         </div>
       `,
-      });
+    });
 
-      return {
-        message:
-          'Correo enviado correctamente',
-      };
+    console.log(
+      'Correo enviado correctamente',
+    );
 
-    } catch (error) {
+    return {
+      message:
+        'Correo enviado correctamente',
+    };
 
-      console.error(
-        'ERROR AL ENVIAR CORREO:',
-        error,
-      );
+  } catch (error) {
 
-      throw new UnauthorizedException(
-        'No se pudo enviar el correo',
-      );
-    }
-  } async resetPassword(
+    console.error(
+      'ERROR EN forgotPassword:',
+      error,
+    );
+
+    throw new UnauthorizedException(
+      error ||
+      'Error al procesar la recuperación de contraseña',
+    );
+  }
+}
+  
+  
+  async resetPassword(
     token: string,
     password: string,
   ) {
