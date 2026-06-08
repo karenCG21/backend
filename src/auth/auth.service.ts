@@ -115,8 +115,8 @@ export class AuthService {
         port: 587,
         secure: false,
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: "arcadevida431@gmail.com",
+          pass: "rlep fcyv sqlf ngsq",
         },
       });
 
@@ -128,7 +128,7 @@ export class AuthService {
     try {
 
       await transporter.sendMail({
-        from: `"Arca de Vida" <${process.env.EMAIL_USER}>`,
+        from: `"Arca de Vida" <${"arcadevida431@gmail.com"}>`,
         to: email,
         subject: 'Recuperación de contraseña',
         html: `
