@@ -117,6 +117,19 @@ export class AuthService {
     }
   }
 
+  async resetPasswordDirect(email: string, password: string) {
+
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('Correo no encontrado');
+    }
+
+    await this.usersService.updatePassword(user.id, password);
+
+    return { message: 'Contraseña actualizada correctamente' };
+  }
+
   async resetPassword(token: string, password: string) {
 
     const user = await this.usersService.findByResetToken(token);
