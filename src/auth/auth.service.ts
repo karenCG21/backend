@@ -8,8 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Resend } from 'resend';
 
-import { randomUUID } from 'crypto';
-
 import { UsersService } from '../users/users.service';
 
 @Injectable()
@@ -68,39 +66,38 @@ export class AuthService {
         throw new UnauthorizedException('Usuario no encontrado');
       }
 
-      const token = randomUUID();
-      const expires = new Date(Date.now() + 1000 * 60 * 30);
+      // Generar contraseña aleatoria
+      const newPassword = Math.random().toString(36).slice(-8);
 
-      await this.usersService.saveResetToken(user.id, token, expires);
-
-      console.log('Token guardado correctamente');
+      // Guardar en la base de datos
+      await this.usersService.updatePassword(user.id, newPassword);
 
       const resend = new Resend(process.env['arca_de_vida']);
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-      console.log('Reset Link:', resetLink);
 
       await resend.emails.send({
         from: 'Arca de Vida <onboarding@resend.dev>',
         to: email,
         subject: 'Recuperación de contraseña',
-    html: `
-  <div style="font-family: Arial; padding:20px;">
-    <h2>🌿 Arca de Vida</h2>
-    <p>Hemos recibido una solicitud para recuperar tu contraseña.</p>
-    <p>Haz clic en el siguiente botón:</p>
-    <a href="${resetLink}" style="background:#28a745; color:white; padding:12px 20px; text-decoration:none; border-radius:5px; display:inline-block;">
-      Restablecer contraseña
-    </a>
-    <p style="margin-top:20px;">Este enlace expirará en 30 minutos.</p>
-    <p>Si no solicitaste este cambio, ignora este mensaje.</p>
-  </div>
-`,
+        html: `
+          <div style="font-family: Arial; padding:20px;">
+            <h2>🌿 Arca de Vida</h2>
+            <p>Hemos recibido una solicitud para recuperar tu contraseña.</p>
+            <p>Tu nueva contraseña es:</p>
+            <h3 style="background:#f4f4f4; padding:10px; border-radius:5px;">${newPassword}</h3>
+            <p>Te recomendamos cambiarla después de iniciar sesión.</p>
+            <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+          </div>
+        `,
       });
 
       console.log('Correo enviado correctamente');
+
       return { message: 'Correo enviado correctamente' };
+
     } catch (error: any) {
+
       console.error('ERROR EN forgotPassword:', error);
+
       throw new UnauthorizedException(
         error?.message || 'Error al procesar la recuperación de contraseña',
       );
