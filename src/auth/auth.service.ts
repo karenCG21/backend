@@ -83,28 +83,18 @@ export class AuthService {
         from: 'Arca de Vida <onboarding@resend.dev>',
         to: email,
         subject: 'Recuperación de contraseña',
-        html: `
-          <div style="font-family: Arial; padding:20px;">
-            <h2>🌿 Arca de Vida</h2>
-            <p>Hemos recibido una solicitud para recuperar tu contraseña.</p>
-            <p>Haz clic en el siguiente botón:</p>
-            
-              href="${resetLink}"
-              style="
-                background:#28a745;
-                color:white;
-                padding:12px 20px;
-                text-decoration:none;
-                border-radius:5px;
-                display:inline-block;
-              "
-            >
-              Restablecer contraseña
-            </a>
-            <p style="margin-top:20px;">Este enlace expirará en 30 minutos.</p>
-            <p>Si no solicitaste este cambio, ignora este mensaje.</p>
-          </div>
-        `,
+    html: `
+  <div style="font-family: Arial; padding:20px;">
+    <h2>🌿 Arca de Vida</h2>
+    <p>Hemos recibido una solicitud para recuperar tu contraseña.</p>
+    <p>Haz clic en el siguiente botón:</p>
+    <a href="${resetLink}" style="background:#28a745; color:white; padding:12px 20px; text-decoration:none; border-radius:5px; display:inline-block;">
+      Restablecer contraseña
+    </a>
+    <p style="margin-top:20px;">Este enlace expirará en 30 minutos.</p>
+    <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+  </div>
+`,
       });
 
       console.log('Correo enviado correctamente');
