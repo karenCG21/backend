@@ -76,9 +76,7 @@ export class AuthService {
       console.log('Token guardado correctamente');
 
       const resend = new Resend(process.env['arca_de_vida']);
-
       const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-
       console.log('Reset Link:', resetLink);
 
       await resend.emails.send({
