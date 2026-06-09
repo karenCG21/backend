@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 
 import * as bcrypt from 'bcrypt';
-import { Resend } from 'resend';
+import * as Brevo from '@getbrevo/brevo';
 
 import { randomUUID } from 'crypto';
 
@@ -55,6 +55,15 @@ export class AuthService {
     };
   }
 
+  private generateRandomPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%';
+    let password = '';
+    for (let i = 0; i < 10; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+
   async forgotPassword(email: string) {
     try {
 
@@ -68,46 +77,50 @@ export class AuthService {
         throw new UnauthorizedException('Usuario no encontrado');
       }
 
-      const token = randomUUID();
-      const expires = new Date(Date.now() + 1000 * 60 * 30);
+      // Generar contraseña aleatoria
+      const newPassword = this.generateRandomPassword();
 
-      await this.usersService.saveResetToken(user.id, token, expires);
+      // Guardar la nueva contraseña encriptada
+      await this.usersService.updatePassword(user.id, newPassword);
 
-      console.log('Token guardado correctamente');
+      console.log('Contraseña actualizada correctamente');
 
-      const resend = new Resend(process.env.arca_de_vida);  // ← cambiado
+      // Enviar correo con la nueva contraseña
+      const apiInstance = new Brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(
+        Brevo.TransactionalEmailsApiApiKeys.apiKey,
+        process.env.arca_de_vida,
+      );
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-
-      console.log('Reset Link:', resetLink);
-
-      await resend.emails.send({
-        from: 'Arca de Vida <onboarding@resend.dev>',
-        to: email,
-        subject: 'Recuperación de contraseña',
-        html: `
-          <div style="font-family: Arial; padding:20px;">
-            <h2>🌿 Arca de Vida</h2>
-            <p>Hemos recibido una solicitud para recuperar tu contraseña.</p>
-            <p>Haz clic en el siguiente botón:</p>
-            
-              href="${resetLink}"
-              style="
-                background:#28a745;
-                color:white;
-                padding:12px 20px;
-                text-decoration:none;
-                border-radius:5px;
-                display:inline-block;
-              "
-            >
-              Restablecer contraseña
-            </a>
-            <p style="margin-top:20px;">Este enlace expirará en 30 minutos.</p>
-            <p>Si no solicitaste este cambio, ignora este mensaje.</p>
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = 'Tu nueva contraseña - Arca de Vida';
+      sendSmtpEmail.to = [{ email: email }];
+      sendSmtpEmail.sender = { name: 'Arca de Vida', email: 'arcadevida431@gmail.com' };
+      sendSmtpEmail.htmlContent = `
+        <div style="font-family: Arial; padding:20px;">
+          <h2>🌿 Arca de Vida</h2>
+          <p>Hemos generado una nueva contraseña para tu cuenta.</p>
+          <p>Tu nueva contraseña es:</p>
+          <div style="
+            background:#f4f4f4;
+            padding:15px;
+            border-radius:5px;
+            font-size:24px;
+            font-weight:bold;
+            letter-spacing:3px;
+            text-align:center;
+            margin:20px 0;
+          ">
+            ${newPassword}
           </div>
-        `,
-      });
+          <p>Inicia sesión con esta contraseña y cámbiala desde tu perfil.</p>
+          <p style="color:#999; font-size:12px;">
+            Si no solicitaste este cambio, contacta al administrador.
+          </p>
+        </div>
+      `;
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
 
       console.log('Correo enviado correctamente');
 
