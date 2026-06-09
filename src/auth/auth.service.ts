@@ -97,9 +97,7 @@ export class AuthService {
           </div>
         `,
       });
-
       console.log('Correo enviado correctamente');
-
       return { message: 'Correo enviado correctamente' };
 
     } catch (error: any) {
