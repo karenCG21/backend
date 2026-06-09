@@ -100,9 +100,7 @@ export class AuthService {
       console.log('Correo enviado correctamente');
       return { message: 'Correo enviado correctamente' };
     } catch (error: any) {
-
       console.error('ERROR EN forgotPassword:', error);
-
       throw new UnauthorizedException(
         error?.message || 'Error al procesar la recuperación de contraseña',
       );
