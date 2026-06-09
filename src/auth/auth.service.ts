@@ -6,7 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 
 import * as bcrypt from 'bcrypt';
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
 import { UsersService } from '../users/users.service';
 
@@ -72,10 +72,18 @@ export class AuthService {
       // Guardar en la base de datos
       await this.usersService.updatePassword(user.id, newPassword);
 
-      const resend = new Resend(process.env['arca_de_vida']);
+      // Configurar transporter de Gmail
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env['GMAIL_USER'],
+          pass: process.env['GMAIL_PASS'],
+        },
+      });
 
-      await resend.emails.send({
-        from: 'Arca de Vida <onboarding@resend.dev>',
+      // Enviar correo
+      await transporter.sendMail({
+        from: `"Arca de Vida" <${process.env['GMAIL_USER']}>`,
         to: email,
         subject: 'Recuperación de contraseña',
         html: `
