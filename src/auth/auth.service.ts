@@ -34,13 +34,16 @@ export class AuthService {
 
     const payload = { sub: user.id, email: user.email };
 
+    // ✅ Normaliza el rol: "administrador" → "admin"
+    const normalizedRole = user.role === 'administrador' ? 'admin' : user.role;
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: normalizedRole,
       },
     };
   }
