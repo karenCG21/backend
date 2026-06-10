@@ -76,16 +76,21 @@ export class ProductsService {
   }
 
   async remove(id: number) {
+    try {
 
-    // Eliminar sale_details asociados con query directo
-    await this.productRepository.query(
-      `DELETE FROM sale_details WHERE "productId" = $1`,
-      [id],
-    );
+      await this.productRepository.query(
+        `DELETE FROM sale_details WHERE "productId" = $1`,
+        [id],
+      );
 
-    const product =
-      await this.findOne(id);
+      const product = await this.findOne(id);
 
-    return this.productRepository.remove(product);
+      return this.productRepository.remove(product);
+
+    } catch (error) {
+
+      console.error('Error al eliminar producto:', error);
+      throw error;
+    }
   }
 }
