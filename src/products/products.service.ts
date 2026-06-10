@@ -77,6 +77,12 @@ export class ProductsService {
 
   async remove(id: number) {
 
+    // Eliminar sale_details asociados con query directo
+    await this.productRepository.query(
+      `DELETE FROM sale_details WHERE "productId" = $1`,
+      [id],
+    );
+
     const product =
       await this.findOne(id);
 
