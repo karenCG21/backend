@@ -5,9 +5,12 @@ import {
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { Loss } from '../losses/entities/loss.entity';
+import { SaleDetail } from '../sale_details/entities/sale_detail.entity';
 
 @Injectable()
 export class ProductsService {
@@ -16,6 +19,12 @@ export class ProductsService {
 
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+
+    @InjectRepository(Loss)
+    private lossRepository: Repository<Loss>,
+
+    @InjectRepository(SaleDetail)
+    private saleDetailRepository: Repository<SaleDetail>,
   ) {}
 
   create(
@@ -78,13 +87,18 @@ export class ProductsService {
   async remove(id: number) {
     try {
 
-      await this.productRepository.query(
-        `DELETE FROM sale_details WHERE "productId" = $1`,
-        [id],
-      );
+      // 1. Eliminar losses asociados
+      await this.lossRepository.delete({
+        plant: { id },
+      });
 
+      // 2. Eliminar sale_details asociados
+      await this.saleDetailRepository.delete({
+        product: { id },
+      });
+
+      // 3. Eliminar el producto
       const product = await this.findOne(id);
-
       return this.productRepository.remove(product);
 
     } catch (error) {
